@@ -1,0 +1,453 @@
+# **********************************************************************
+# ********* HIGH AVAILABILITY CLUSTER CONFIGURATION FILE ***************
+# ***** For complete details about cluster parameters and how to *******
+# ***** set them, consult the Serviceguard manual. *********************
+# **********************************************************************
+
+# Enter a name for this cluster.  This name will be used to identify the
+# cluster when viewing or manipulating it.
+
+CLUSTER_NAME            cluster1
+
+
+# The HOSTNAME_ADDRESS_FAMILY parameter specifies the Internet Protocol address
+# family to which Serviceguard will attempt to resolve cluster node names and
+# quorum server host names.
+# If the parameter is set to IPV4, Serviceguard will attempt to resolve the names
+# to IPv4 addresses only.  This is the default value.
+# If the parameter is set to IPV6, Serviceguard will attempt to resolve the names
+# to IPv6 addresses only.  No IPv4 addresses need be configured on the system or
+# listed in the /etc/hosts file except for IPv4 loopback address.
+# If the parameter is set to ANY, Serviceguard will attempt to resolve the names
+# to both IPv4 and IPv6 addresses.  The /etc/hosts file on each node must contain
+# entries for all IPv4 and IPv6 addresses used throughout the cluster including
+# all STATIONARY_IP and HEARTBEAT_IP addresses as well as any other addresses
+
+HOSTNAME_ADDRESS_FAMILY         IPV4
+
+# Cluster Lock Parameters
+# The cluster lock is used as a tie-breaker for situations
+# in which a running cluster fails, and then two equal-sized
+# sub-clusters are both trying to form a new cluster.  The
+# cluster lock may be configured using only one of the
+# following alternatives on a cluster: 
+#          the LVM lock disk
+#          the lock LUN
+#          the quorom server
+#
+#
+# Consider the following when configuring a cluster.
+# For a two-node cluster, you must use a cluster lock.  For
+# a cluster of three or four nodes, a cluster lock is strongly
+# recommended.  For a cluster of more than four nodes, a
+# cluster lock is recommended.  If you decide to configure
+# a lock for a cluster of more than four nodes, it must be
+# a quorum server.
+
+# Lock Disk Parameters.  Use the FIRST_CLUSTER_LOCK_VG and
+# FIRST_CLUSTER_LOCK_PV parameters to define a lock disk.
+# The FIRST_CLUSTER_LOCK_VG is the LVM volume group that
+# holds the cluster lock. This volume group should not be
+# used by any other cluster as a cluster lock device.  
+
+# LUN lock disk parameters. Use the  CLUSTER_LOCK_LUN parameter
+# to define the device on a per node basis. The device may only
+# be used for this purpose and by only a single cluster.
+#
+# Example for a FC storage array cluster disk
+# CLUSTER_LOCK_LUN /dev/dsk/c1t2d3s1
+# For 11.31 and later versions of HP-UX with cluster device files
+# CLUSTER_LOCK_LUN /dev/cdisk/disk22
+# For 11.31 and later versions of HP-UX without cluster device files
+# CLUSTER_LOCK_LUN /dev/disk/disk4_p2
+
+# Quorum Server Parameters. Use the QS_HOST, QS_ADDR, QS_POLLING_INTERVAL,
+# and QS_TIMEOUT_EXTENSION parameters to define a quorum server. The QS_HOST
+# and QS_ADDR are either the host name or IP address of the system that is
+# running the quorum server process. More than one IP address can be
+# configured for the quorum server. When one subnet fails, Serviceguard
+# uses the next available subnet to communicate with the quorum server.
+# QS_HOST is used to specify the quorum server and QS_ADDR can be used to
+# specify additional IP addresses for the quorum server. The QS_HOST entry
+# must be specified (only once) before any other QS parameters. Only 
+# one QS_ADDR entry is used to specify the additional IP address.
+# Both QS_HOST and QS_ADDR should not resolve to the same IP address.
+# Otherwise cluster configuration will fail. All subnets must be up 
+# when you use cmapplyconf and cmquerycl to configure the cluster.
+# The QS_POLLING_INTERVAL is the interval (in microseconds) at which
+# Serviceguard checks to sure the quorum server is running.
+# The optional QS_TIMEOUT_EXTENSION (in microseconds) is used to increase
+# the time allocated for quorum server response. The default quorum
+# server timeout is calculated primarily from MEMBER_TIMEOUT parameter.
+# For cluster of up to 4 nodes it is 0.2*MEMBER_TIMEOUT. It increases
+# as number of nodes increases and reaches to 0.5*MEMBER_TIMEOUT for
+# 16 nodes
+#
+# If quorum server is configured on busy network or if quorum server
+# polling is experiencing timeouts (syslog messages) or if quorum server
+# is used for large number of clusters, such default time (as mentioned
+# above) might not be sufficient. In such cases this parameter should be
+# use to provide more time for quorum server.
+# Also this parameter deserves more consideration if small values
+# for MEMBER_TIMEOUT is used.
+#
+# The value of QS_TIMEOUT_EXTENSION will directly effect the amount of
+# time it takes for cluster reformation in the event of node failure. For
+# example, if QS_TIMEOUT_EXTENSION is set to 10 seconds, the cluster
+# reformation will take 10 seconds longer than if the QS_TIMEOUT_EXTENSION
+# was set to 0. This delay applies even if there is no delay incontacting
+# the Quorum Server.#
+# The recommended value for QS_TIMEOUT_EXTENSION is 0 (the default value),
+# and the maximum supported value is 300000000 (5 minutes).
+#
+# For example, to configure a quorum server running on node "qs_host"
+# with the additional IP address "qs_addr" and with 120 seconds for the
+# QS_POLLING_INTERVAL and to add 2 seconds to the system assigned value
+# for the quorum server timeout, enter
+#
+# QS_HOST qs_host
+# QS_ADDR qs_addr
+# QS_POLLING_INTERVAL 120000000
+# QS_TIMEOUT_EXTENSION 2000000
+
+FIRST_CLUSTER_LOCK_VG           /dev/vglock
+
+
+# Definition of nodes in the cluster.
+# Repeat node definitions as necessary for additional nodes.
+# NODE_NAME is the specified nodename in the cluster.
+# It must match the hostname and both cannot contain full domain name.
+# Each NETWORK_INTERFACE, if configured with IPv4 address,
+# must have ONLY one IPv4 address entry with it which could 
+# be either HEARTBEAT_IP or STATIONARY_IP.
+# Each NETWORK_INTERFACE, if configured with IPv6 address(es)
+# can have multiple IPv6 address entries (up to a maximum of 2,
+# only one IPv6 address entry belonging to site-local scope
+# and only one belonging to global scope) which could be
+# either HEARTBEAT_IP or STATIONARY_IP.
+
+# Note: This configuration contains IPv4 STATIONARY_IP or HEARTBEAT_IP
+# addresses. To obtain an IPv6-only cluster on supported platforms,
+# comment out any IPv4 STATIONARY_IPs or HEARTBEAT_IPs.
+# If this leaves any NETWORK_INTERFACE without any STATIONARY_IP or
+# HEARTBEAT_IP, comment out the NETWORK_INTERFACE as well.
+# Modify the resulting configuration as necessary to meet the
+# hearbeat requirements and recommendations for a Serviceguard
+# configuration. These are spelled out in chapter 4 of the Managing
+# Serviceguard manual.
+#
+# Node capacity parameters. Use the CAPACITY_NAME and CAPACITY_VALUE
+# parameters to define a capacity for the node. Node capacities correspond to
+# package weights; node capacity is checked against the corresponding
+# package weight to determine if the package can run on that node.
+# 
+# CAPACITY_NAME specifies a name for the capacity. 
+# The capacity name can be any string that starts and ends with an
+# alphanumeric character, and otherwise contains only alphanumeric characters,
+# dot (.), dash (-), or underscore (_). Maximum string
+# length is 39 characters. Duplicate capacity names are not allowed.
+# 
+# CAPACITY_VALUE specifies a value for the CAPACITY_NAME that precedes
+# it. This is a floating point value between 0 and 1000000. Capacity values
+# are arbitrary as far as Serviceguard is concerned; they have meaning only in
+# relation to the corresponding package weights.
+
+# Node capacity definition is optional, but if CAPACITY_NAME is specified,   
+# CAPACITY_VALUE must also be specified; CAPACITY_NAME must come first. 
+# To specify more than one capacity, repeat this process for each capacity.
+
+# NOTE: If a given capacity is not defined for a node, Serviceguard assumes
+# that capacity is infinite on that node. For example, if pkgA, pkgB, and pkgC
+# each specify a weight of 1000000 for WEIGHT_NAME "memory", and CAPACITY_NAME
+# "memory" is not defined for node1, then all three packages are eligible
+# to run at the same time on node1, assuming all other requirements are met.
+# 
+# Cmapplyconf will fail if any node defines a capacity and
+# any package has min_package_node as the failover policy or
+# has automatic as the failback policy.
+
+# You can define a maximum of 4 capacities.
+# 
+# NOTE: Serviceguard supports a capacity with the reserved name
+# "package_limit". This can be used to limit the number of packages
+# that can run on a node. If you use "package_limit", you cannot
+# define any other capacities for this cluster, and the default
+# weight for all packages is 1.
+#
+# Example:
+#  CAPACITY_NAME package_limit
+#  CAPACITY_VALUE 4
+#
+# This allows a maximum of four packages to run on this node,
+# assuming each has the default weight of one.
+#
+# For all capacities other than "package_limit", the default weight for
+# all packages is zero
+# 
+
+NODE_NAME               sz-hpux02
+  NETWORK_INTERFACE     lan0
+    HEARTBEAT_IP        10.66.249.22
+  NETWORK_INTERFACE     lan2
+  NETWORK_INTERFACE     lan1
+    HEARTBEAT_IP        192.168.10.22
+#  CLUSTER_LOCK_LUN     
+  FIRST_CLUSTER_LOCK_PV /dev/cdisk/disk3
+
+
+# Route information
+# route id 1: 10.66.249.22
+# route id 2: 192.168.10.22
+#  CAPACITY_NAME
+#  CAPACITY_VALUE
+
+# Possible standby Network Interfaces for lan0,lan1: lan2.
+
+NODE_NAME               sz-hpux04
+  NETWORK_INTERFACE     lan4
+    HEARTBEAT_IP        10.66.249.21
+  NETWORK_INTERFACE     lan6
+  NETWORK_INTERFACE     lan5
+    HEARTBEAT_IP        192.168.10.21
+#  CLUSTER_LOCK_LUN     
+  FIRST_CLUSTER_LOCK_PV /dev/cdisk/disk3
+
+
+# Route information
+# route id 1: 10.66.249.21
+# route id 2: 192.168.10.21
+#  CAPACITY_NAME
+#  CAPACITY_VALUE
+
+# Possible standby Network Interfaces for lan4,lan5: lan6.
+
+
+# Cluster Timing Parameters (microseconds).
+
+# The MEMBER_TIMEOUT parameter defaults to 14000000 (14 seconds).
+# If a heartbeat is not received from a node within this time, it is
+# declared dead and the cluster reforms without that node.
+# A value of 10 to 25 seconds is appropriate for most installations.
+# For installations in which the highest priority is to reform the cluster
+# as fast as possible, a setting of as low as 3 seconds is possible.
+# When a single heartbeat network with standby interfaces is configured,
+# MEMBER_TIMEOUT cannot be set below 14 seconds if the network interface
+# type is Ethernet, or 22 seconds if the network interface type is
+# InfiniBand (HP-UX only).
+# Note that a system hang or network load spike whose duration exceeds
+# MEMBER_TIMEOUT will result in one or more node failures.
+# The maximum value recommended for MEMBER_TIMEOUT is 60000000
+# (60 seconds).
+
+MEMBER_TIMEOUT          14000000
+
+
+# Configuration/Reconfiguration Timing Parameters (microseconds).
+
+AUTO_START_TIMEOUT      600000000
+NETWORK_POLLING_INTERVAL        2000000
+
+# You can use the optional CONFIGURED_IO_TIMEOUT_EXTENSION parameter 
+# to increase the amount of time (in microseconds) that Serviceguard 
+# will wait to ensure that all pending I/O on a failed node has ceased. 
+# To ensure data integrity, you must set this parameter in the following 
+# cases: for an extended-distance cluster using software mirroring across 
+# data centers over links between iFCP switches; and for any cluster in 
+# which packages use NFS mounts. See the section on cluster configuration 
+# parameters in the 'Managing Serviceguard' manual for more information.
+# The default value of CONFIGURED_IO_TIMEOUT_EXTENSION parameter is 0. 
+# Serviceguard supports the CONFIGURED_IO_TIMEOUT_EXTENSION parameter values 
+# in the range 0 to (2^31)-1 [2147483647]. 
+
+# CONFIGURED_IO_TIMEOUT_EXTENSION               0
+
+# Network Monitor Configuration Parameters.
+# The NETWORK_FAILURE_DETECTION parameter determines how LAN card failures are detected.
+# If set to INONLY_OR_INOUT, a LAN card will be considered down when its inbound
+# message count stops increasing or when both inbound and outbound
+# message counts stop increasing.
+# If set to INOUT, both the inbound and outbound message counts must
+# stop increasing before the card is considered down.
+
+NETWORK_FAILURE_DETECTION               INOUT
+
+# NETWORK_AUTO_FAILBACK
+# When set to YES a recovery of the primary LAN interface will cause failback
+# from the standby LAN interface to the primary.
+# When set to NO a recovery of the primary LAN interface will do nothing and
+# the standby LAN interface will continue to be used until cmmodnet -e lanX
+# is issued for the primary LAN interface.
+
+NETWORK_AUTO_FAILBACK           YES
+
+# IP Monitor Configuration Parameters.
+# The following set of three parameters can be repeated as necessary.
+# SUBNET is the subnet to be configured whether or not to be monitored
+# at IP layer.
+# IP_MONITOR is set to ON if the subnet is to be monitored at IP layer.
+# IP_MONITOR is set to OFF if the subnet is not to be monitored at IP layer.
+# POLLING_TARGET is the IP address to which polling messages are sent
+# from each network interface in the subnet.
+# Each SUBNET can have multiple polling targets, so multiple 
+# POLLING_TARGET entries can be specified. If no POLLING_TARGET is
+# specified, peer interfaces in the subnet will be polling targets for each other.
+# Only subnets with a gateway that is configured to accept
+# ICMP Echo Request messages will be included by default with IP_MONITOR
+# set to ON, and with its gateway listed as a POLLING_TARGET.
+SUBNET 10.66.248.0
+  IP_MONITOR ON
+  POLLING_TARGET 10.66.248.1
+
+SUBNET 192.168.10.0
+  IP_MONITOR OFF
+
+
+
+# Package Configuration Parameters.
+# Enter the maximum number of packages which will be configured in the cluster.
+# You can not add packages beyond this limit.
+# This parameter is required.
+MAX_CONFIGURED_PACKAGES         300
+
+
+# Load Balancing feature places a package during failover, on such nodes of the
+# cluster, so as to balance the load in the cluster, according to weights
+# configured. Only one type of capacity can be defined when load balancing
+# is turned on and all nodes must specify this capacity. To turn
+# on load balancing in the cluster set it to ON.
+# Legal values for LOAD_BALANCING : OFF, ON.
+#LOAD_BALANCING         OFF
+
+# Optional package default weight parameters. Use WEIGHT_NAME and
+# WEIGHT_DEFAULT parameters to define a default value for this weight
+# for all packages except system multi-node packages.
+# Package weights correspond to node capacities; node capacity
+# is checked against the corresponding package weight to determine
+# if the package can run on that node.
+# 
+# WEIGHT_NAME
+# specifies a name for a weight that corresponds to a
+# capacity specified earlier in this file. Weight is defined for
+# a package, whereas capacity is defined for a node. For any given
+# weight/capacity pair, WEIGHT_NAME, CAPACITY_NAME (and weight_name
+# in the package configuration file) must be the same. The rules for
+# forming all three are the same. See the discussion of the capacity
+# parameters earlier in this file.
+
+# NOTE: A weight (WEIGHT_NAME/WEIGHT_DEFAULT) has no meaning on a node
+# unless a corresponding capacity (CAPACITY_NAME/CAPACITY_VALUE) is
+# defined for that node. 
+# For example, if CAPACITY_NAME "memory" is not defined for
+# node1, then node1's "memory" capacity is assumed to be infinite.
+# Now even if pkgA, pkgB, and pkgC each specify the maximum weight
+# of 1000000 for WEIGHT_NAME "memory", all three packages are eligible
+# to run at the same time on node1, assuming all other requirements are met.
+# 
+# WEIGHT_DEFAULT specifies a default weight for this WEIGHT_NAME.
+# This is a floating point value between 0 and 1000000.
+# Package weight default values are arbitrary as far as Serviceguard is
+# concerned; they have meaning only in relation to the corresponding node
+# capacities. 
+# 
+# The package weight default parameters are optional. If they are not
+# specified, a default value of zero will be assumed. If defined,
+# WEIGHT_DEFAULT must follow WEIGHT_NAME. To specify  more than one package
+# weight, repeat this process for each weight.
+# Note: for the reserved weight "package_limit", the default weight is
+# always one. This default cannot be changed in the cluster configuration file,
+# but it can be overriden in the package configuration file.
+# 
+# For any given package and WEIGHT_NAME, you can override the WEIGHT_DEFAULT
+# set here by setting weight_value to a different value for the corresponding
+# weight_name in the package configuration file. 
+# 
+# Cmapplyconf will fail if you define a default for a weight and no node
+# in the cluster specifies a capacity of the same name.
+# You can define a maximum of 4 weight defaults
+# 
+# Example: The following example defines a default for "processor" weight
+# of 0.1 for the package:
+#          
+#  WEIGHT_NAME processor
+#  WEIGHT_DEFAULT 0.1
+# 
+# WEIGHT_NAME
+# WEIGHT_DEFAULT
+
+
+# Access Control Policy Parameters.
+#
+# Three entries set the access control policy for the cluster:
+# First line must be USER_NAME, second USER_HOST, and third USER_ROLE.
+# Enter a value after each. 
+#
+# 1. USER_NAME can either be ANY_USER, or a maximum of 
+#    8 login names from the /etc/passwd file on user host.
+#    The following special characters are NOT supported for USER_NAME
+#    ' ', '/', '\', '*'
+# 2. USER_HOST is where the user can issue Serviceguard commands. 
+#    If using Serviceguard Manager, it is the COM server.
+#    Choose one of these three values: ANY_SERVICEGUARD_NODE, or 
+#    (any) CLUSTER_MEMBER_NODE, or a specific node. For node, 
+#    use the official hostname from domain name server, and not 
+#    an IP addresses or fully qualified name.
+# 3. USER_ROLE must be one of these three values:
+#    * MONITOR: read-only capabilities for the cluster and packages
+#    * PACKAGE_ADMIN: MONITOR, plus administrative commands for packages
+#      in the cluster
+#    * FULL_ADMIN: MONITOR and PACKAGE_ADMIN plus the administrative
+#      commands for the cluster.
+#
+# Access control policy does not set a role for configuration 
+# capability. To configure, a user must log on to one of the
+# cluster's nodes as root (UID=0). Access control 
+# policy cannot limit root users' access.
+# 
+# MONITOR and FULL_ADMIN can only be set in the cluster configuration file, 
+# and they apply to the entire cluster. PACKAGE_ADMIN can be set in the  
+# cluster or a package configuration file. If set in the cluster 
+# configuration file, PACKAGE_ADMIN applies to all configured packages. 
+# If set in a package configuration file, PACKAGE_ADMIN applies to that
+# package only.
+# 
+# MONITOR is set by default in a new cluster configuration as of Serviceguard 
+# release A.11.19.00.  This is to support cluster discovery from other HP 
+# Administration products such as Systems Insight Manager (HP SIM) and 
+# Distributed Systems Administration (DSAU) tools. Removing MONITOR is allowed 
+# as an online configuration change within Serviceguard.  However removing MONITOR 
+# will break cluster management for HP SIM and HP VSE products 
+# 
+# Conflicting or redundant policies will cause an error while applying 
+# the configuration, and stop the process. The maximum number of access
+# policies that can be configured in the cluster is 200.
+#
+# Example: to configure a role for user john from node noir to
+# administer a cluster and all its packages, enter:
+# USER_NAME  john
+# USER_HOST  noir
+# USER_ROLE  FULL_ADMIN
+
+USER_NAME       ANY_USER
+USER_HOST       ANY_SERVICEGUARD_NODE
+USER_ROLE       MONITOR
+
+
+# List of cluster aware LVM Volume Groups. These volume groups will
+# be used by package applications via the vgchange -a e command.
+# Neither CVM or VxVM Disk Groups should be used here.
+# For example: 
+# VOLUME_GROUP          /dev/vgdatabase
+# VOLUME_GROUP          /dev/vg02
+VOLUME_GROUP            /dev/vgmid
+
+
+# List of OPS Volume Groups.
+# Formerly known as DLM Volume Groups, these volume groups
+# will be used by OPS or RAC cluster applications via
+# the vgchange -a s command. (Note: the name DLM_VOLUME_GROUP
+# is also still supported for compatibility with earlier versions.)
+# For example: 
+# OPS_VOLUME_GROUP              /dev/vgdatabase
+# OPS_VOLUME_GROUP              /dev/vg02
+
+OPS_VOLUME_GROUP                /dev/vglock
