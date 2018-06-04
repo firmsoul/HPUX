@@ -1,0 +1,1845 @@
+# **********************************************************************
+# ****** HIGH AVAILABILITY PACKAGE CONFIGURATION FILE (template) *******
+# **********************************************************************
+# ******* Note: This file MUST be edited before it can be used. ********
+# * For complete details about package parameters and how to set them, *
+# * consult the Serviceguard manual. 
+# **********************************************************************
+# 
+# "package_name" is the name that is used to identify the package.
+#     
+# Package names must be unique within a cluster.
+#     
+# Legal values for package_name:
+#   Any string that starts and ends with an alphanumeric character, and 
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_) 
+#   in between.
+#   Maximum length is 39 characters. 
+#       
+
+package_name            nfs                     
+
+# "package_description" specifies the application that the package runs.
+# 
+# 
+# package_description specifies the application that the package
+# runs. This is a descriptive parameter that can start and end with
+# either a quote(") or an alphanumeric character. If it starts with
+# an alphanumeric character, it can contain any character other than
+# quote(") and single quote('). If it starts with a quote("),
+# it should end with a quote(") and can contain any character other
+# than quote(").
+# Maximum length is 80 characters. Default value is "Serviceguard
+# Package".
+# 
+# Example:
+# If the package is running the sendmail application, then
+# package_description can be set to:
+# 
+#       package_description "Sendmail application"
+# 
+# If the package is running the Apache and Tomcat applications, then
+# package_description can be set to:
+# 
+#       package_description "Apache and Tomcat applications"
+# 
+# 
+# Legal values for package_description: /^[0-9A-Za-z][^"|']*[0-9A-Za-z]$/, /^"[^"]*"$/.
+
+package_description                     "Serviceguard Package"
+
+# "module_name" specifies the package module from which 
+# this package was created. Do not change the module_name. 
+# 
+# "module_version" indicates the version of the module included in the
+# package configuration file. Do not change "module_version".
+#     
+# Legal values for module_name: <Any String>
+# Legal values for module_version: (value >=  0).
+
+module_name                     sg/basic
+module_version                  1
+module_name                     sg/all
+module_version                  1
+module_name                     sg/failover
+module_version                  1
+module_name                     sg/priority
+module_version                  1
+module_name                     sg/dependency
+module_version                  1
+module_name                     sg/weight
+module_version                  1
+module_name                     sg/monitor_subnet
+module_version                  1
+module_name                     sg/package_ip
+module_version                  1
+module_name                     sg/service
+module_version                  1
+module_name                     sg/generic_resource
+module_version                  1
+module_name                     sg/resource
+module_version                  1
+module_name                     sg/volume_group
+module_version                  1
+module_name                     sg/filesystem
+module_version                  1
+module_name                     sg/pev
+module_version                  1
+module_name                     sg/external_pre
+module_version                  1
+module_name                     sg/external
+module_version                  1
+module_name                     sg/acp
+module_version                  1
+module_name                     sg/pr_cntl
+module_version                  1
+module_name                     nfs/hanfs
+module_version                  1
+module_name                     nfs/hanfs_export
+module_version                  1
+module_name                     nfs/hanfs_flm
+module_version                  1
+
+# "package_type" is the type of package.
+#     
+# The package_type attribute specifies the behavior for this
+# package. Legal values and their meanings are:
+# 
+#     failover     package runs on one node at a time and if a failure
+#                  occurs it can switch to an alternate node.
+# 
+#     multi_node   package runs on multiple nodes at the same time and
+#                  can be independently started and halted on individual
+#                  nodes. Failures of package components such as services,
+#                  EMS resources, generic resources or subnets, will cause
+#                  the package to be halted only on the node on which the
+#                  failure occurred. Relocatable IP addresses cannot be
+#                  assigned to "multi_node" packages.
+# 
+#     system_multi_node
+#                  package runs on all cluster nodes at the same time.
+#                  It cannot be started and halted on individual nodes.
+#                  Both "node_fail_fast_enabled" and "auto_run" 
+#                  must be set to "yes" for this type of package. All 
+#                  "services" must have "service_fail_fast_enabled" set 
+#                  to "yes". system_multi_node packages are only
+#                  supported for use by applications provided by
+#                  Hewlett-Packard.
+# 
+# 
+#       Since "multi_node" and "system_multi_node" packages can run on more
+#       than one node at a time and do not failover in the event of a
+#       package failure, the following parameters cannot be
+#       specified when configuring packages of these types:
+# 
+#          failover_policy
+#          failback_policy
+# 
+#       Since an IP address cannot be assigned to more than one node at a
+#       time, relocatable IP addresses cannot be assigned to "multi_node"
+#       packages.  If volume groups are used in a "multi_node" package,
+#       they must be activated in a shared mode, leaving the application
+#       responsible for data integrity. 
+# 
+#       Shared access requires a shared volume manager.
+# 
+#       The default value for "package_type" is "failover".
+#     
+# Legal values for package_type: failover, multi_node, system_multi_node.
+
+package_type                    failover
+
+# "node_name" specified which nodes this package can run on.
+#     
+# Enter the names of the nodes configured to run this package, repeat
+# this line for each cluster member node configured to run this package. 
+# 
+# NOTE: The order in which the nodes are specified here determines the
+# order of priority when Serviceguard is deciding where to run the
+# package.
+#        
+# Example : node_name  first_priority_node
+#           node_name  second_priority_node
+# 
+# If all nodes in the cluster can run the package, and order is not
+# important, specify "node_name *".
+# 
+# Example : node_name  *
+#     
+# Legal values for node_name:
+#   "*", or any node name in the cluster.
+#   "node name" is any string that starts and ends with an alphanumeric 
+#   character, and contains only alphanumeric characters, dot(.), dash(-), 
+#   or underscore(_) in between.
+#   Maximum name length is 39 characters. 
+#       
+
+node_name                       *
+
+# "auto_run" defines whether the package is to be started when the
+# cluster is started, and if it will fail over automatically.
+#     
+# Possible values are "yes" and "no".
+# The default for "auto_run" is "yes", meaning that the package will be
+# automatically started when the cluster is started, and that, in the
+# event of a failure the package will be started on an adoptive node.
+# If "auto_run is "no", the package is not started when the cluster
+# is started, and must be started with the cmrunpkg command.
+# 
+# "auto_run" replaces "pkg_switching_enabled".
+#     
+# Legal values for auto_run: yes, no.
+
+auto_run                        yes
+
+# "node_fail_fast_enabled" will cause the node to fail if the package fails.
+#     
+# Possible values are "yes" and "no".  The default for
+# "node_fail_fast_enabled" is "no".  In the event of failure, if
+# "node_fail_fast_enabled" is set to "yes", Serviceguard will halt the
+# node on which the package is running. All system multi-node packages
+# must have "node_fail_fast_enabled" set to "yes".
+#  
+#     
+# Legal values for node_fail_fast_enabled: yes, no.
+
+node_fail_fast_enabled                  no
+
+# "run_script_timeout" is the number of seconds allowed for the package to start.
+# "halt_script_timeout" is the number of seconds  allowed for the package to halt.
+#     
+# If the start or halt function has not completed in the specified
+# number of seconds, the function will be terminated. The default is
+# "no_timeout".  Adjust the timeouts as necessary to permit full
+# execution of each function.
+# 
+# Note: The "halt_script_timeout" should be greater than the sum of
+# all "service_halt_timeout" values specified for all services.
+#     
+# Legal values for run_script_timeout: no_timeout, (value > 0).
+
+run_script_timeout                      no_timeout
+
+# Legal values for halt_script_timeout: no_timeout, (value > 0).
+
+halt_script_timeout                     no_timeout
+
+# "successor_halt_timeout" limits the amount of time
+# Serviceguard waits for packages that depend on this package 
+# ("successor packages") to halt, before running the halt script of this 
+# package.
+#      
+# Permissible values are 0 - 4294 (specifying the maximum
+# number of seconds Serviceguard will wait).
+# The default value is "no_timeout", which means Serviceguard
+# will wait as long as it takes for the successor packages to halt.
+# A timeout of 0 indicates that this package will halt without
+# waiting for successors packages to halt
+# Example: 
+# successor_halt_timeout   no_timeout
+# successor_halt_timeout   60
+#      
+# Legal values for successor_halt_timeout: no_timeout, ( (value >= 0) && (value <= 4294) ).
+
+successor_halt_timeout                  no_timeout
+
+# "script_log_file" is the full path name for the package control script log 
+# file. The maximum length of the path name is MAXPATHLEN characters long.
+#     
+# If this parameter is not set, script output is sent to
+# $SGRUN/log/<package_name>.log.
+# 
+#     
+# Legal values for script_log_file: <Any String>
+
+script_log_file                 $SGRUN/log/$SG_PACKAGE.log
+
+# "operation_sequence" defines the order in which the individual script 
+# programs will be executed in the package start action. The package halt action
+# will be executed in the reverse order.
+# 
+# This attribute or list must not be modified. It is not supported if modified. 
+#     
+# Legal values for operation_sequence: <Any String>
+
+operation_sequence                      $SGCONF/scripts/sg/external_pre.sh
+operation_sequence                      $SGCONF/scripts/sg/pr_cntl.sh
+operation_sequence                      $SGCONF/scripts/sg/volume_group.sh
+operation_sequence                      $SGCONF/scripts/sg/filesystem.sh
+operation_sequence                      $SGCONF/scripts/nfs/hanfs_export.sh
+operation_sequence                      $SGCONF/scripts/sg/package_ip.sh
+operation_sequence                      $SGCONF/scripts/nfs/hanfs_flm.sh
+operation_sequence                      $SGCONF/scripts/sg/external.sh
+operation_sequence                      $SGCONF/scripts/sg/service.sh
+operation_sequence                      $SGCONF/scripts/sg/resource.sh
+
+# "log_level" controls the amount of information printed
+# during validation and package startup or shutdown time. 
+#      
+# "log_level" controls the amount of information printed to stdout when
+# the package configuration is validated, and to the script_log_file
+# when the package starts up and shuts down. Legal values are 0 through
+# 5, where 0 is the least amount of logging and 5 is the most. log_level
+# 5 includes all information from level 0 to 5.  The default value is 0.
+# 
+# 
+#      Level 0 : user visible informative messages
+#      Level 1 : slightly more detail user visible informative messages
+#      Level 2 : messages provide logic flow
+#      Level 3 : messages provide detailed data structure information
+#      Level 4 : debugging information that provides detailed data
+#      Level 5 : function call flow
+#     
+# Legal values for log_level: ( (value >= 0) && (value <= 5) ).
+
+#log_level                      
+
+# "failover_policy" is the policy to be applied when package fails.
+#     
+# This policy will be used to select a node whenever the package needs
+# to be started or restarted.  The default policy is "configured_node".
+# This policy means Serviceguard will select nodes in priority order
+# from the list of "node_name" entries.
+# 
+# An alternative policy is "SITE_PREFERRED". This policy means
+# that when selecting nodes from the list of "NODE_NAME" entries,
+# Serviceguard will give priority to nodes that belong to the site the
+# package last ran on, over those that belong to a different site. When
+# all nodes belonging to the same site where the package last ran are
+# unable to run the package, the package will automatically failover to
+# the other site.
+# 
+# An alternative policy is "SITE_PREFERRED_MANUAL". This policy can
+# be used only in a Metrocluster environment. This policy means
+# that when selecting nodes from the list of "node_name" entries,
+# Serviceguard selects a node that belongs to the site that the package
+# last ran on. When all nodes belonging to the same site where the package
+# last ran are unable to run the package, the package will not automatically
+# fail over to the other site. In such situations, manual intervention is
+# needed to start the package on either the same site or on another site.
+# 
+# Another policy is "min_package_node". This policy means
+# Serviceguard will select from the list of "node_name" entries the
+# node, which is running fewest packages when this package needs to
+# start.
+#     
+# Legal values for failover_policy: configured_node, min_package_node, site_preferred, site_preferred_manual.
+
+failover_policy                 configured_node
+
+# "failback_policy" is the action to take when a package is not running
+# on its primary node.
+#     
+# This policy will be used to determine what action to take when a
+# package is not running on its primary node and its primary node is
+# capable of running the package. The default policy is "manual".  The
+# "manual" policy means no attempt will be made to move the package back
+# to its primary node when it is running on an adoptive node.
+# 
+# The alternative policy is "automatic". This policy means Serviceguard
+# will attempt to move the package back to its primary node as soon as
+# the primary node is capable of running the package.
+# 
+#     
+# Legal values for failback_policy: manual, automatic.
+
+failback_policy                 manual
+
+# The "priority" parameter specifies the priority of the package.
+#     
+# This is an optional parameter. Valid values are a number between
+# 1 and 3000 or no_priority.  Default is no_priority.
+# A smaller number indicates higher priority. A package with a
+# numerical priority has higher priority than a package with no_priority.
+# 
+# If a number is specified, it must be unique in the cluster.
+# To help assign unique priorities, HP recommends you use
+# priorities in increments of 10. This will allow you
+# to add new packages without having to reassign priorities.
+# 
+# Multi-node and System multi-node package cannot be assigned a priority. 
+# 
+# This parameter is used only when a weight has been defined for a package,
+# a package depends on other packages,
+# or other packages depend on this package, but can be specified even
+# when no weights or dependencies have yet been configured.
+# If priority is not configured, the package is assigned the default
+# priority value, no_priority.
+# 
+# Serviceguard gives preference to running the higher priority package.
+# This means that, if necessary, Serviceguard will halt a package (or
+# halt and restart on anther node) in order to run a higher priority
+# package. The reason may be:
+#   * the node's capacity would otherwise be exceeded
+#   * there is a direct or indirect dependency between the lower and
+#     higher priority packages.
+# 
+# For example, suppose package pkg1 depends on package pkg2 to
+# be up on the same node, both have package switching enabled
+# and both are currently up on node node1. If pkg1 needs to
+# fail over to node2, it will also need pkg2 to move to node2.
+# If pkg1 has higher priority than pkg2, it can force pkg2 to 
+# move to node2. Otherwise, pkg1 cannot fail over because pkg2 is
+# running on node1.
+# Examples of package priorities and failover results:
+# 
+#        pkg1 priority     pkg2 priority    results
+#        10                20               pkg1 is higher; fails over
+#        20                10               pkg1 is lower; will not fail over
+#        any number        no_priority      pkg1 is higher; fails over
+#        no_priority       no_priority      equal priority; will not fail over
+#        no_priority       any number       pkg1 is lower; will not fail over
+#     
+# Legal values for priority: no_priority, ( (value >= 1) && (value <= 3000) ).
+
+priority                        no_priority
+
+# The package dependency parameters are "dependency_name",
+# "dependency_condition" and "dependency_location".
+#     
+#  Dependencies are used to describe the relationship between two packages.
+#  To define a dependency, "dependency_name" and "dependency_condition"
+#  are required and "dependency_location is optional.
+# 
+#  "dependency_name" must be a unique identifier for the dependency.
+# 
+#  "dependency_condition" describes what must be true for
+#           the dependency to be satisfied.
+# 
+#           The syntax is: <package name> = <package status>
+# 
+#           The valid values for <package status> are "up" or "down".
+# 
+#           "up"  means that this package requires the package identified
+#           by "package_name" to be up (status reported by cmviewcl is "up").
+# 
+#           If  "up" is specified, the dependency rules are as follows:
+# 
+#           * A multi-node package can depend only on another multi-
+#             node or system multi-node package.
+# 
+#           * A failover package whose failover_policy is
+#             min_package_node can depend only on a multi-node or
+#             system multi-node package.
+# 
+#           * A failover package whose failover_policy is
+#             configured_node can depend on a multi-node or system
+#             multi-node package, or another failover package whose
+#             failover_policy is configured_node.
+# 
+#           "down" means that this package requires the package
+#           identified by "package name" to be down (status reported by 
+#           cmviewcl is "down").  This is known as an exclusion dependency.
+# 
+#           This means that only one of these packages can be running at
+#           any given time.
+# 
+#           If the "down" value is specified, the exclusion dependency must be
+#           mutual; that is, if pkgA depends on pkgB to be down, pkgB must
+#           also depend on pkgA to be down. 
+# 
+#           This means that in order to create an exclusion dependency
+#           between two packages, you must apply both packages to the
+#           cluster configuration at the same time.
+# 
+#           An exclusion dependency is allowed only between failover
+#           packages with configured_node as failover policy, and at least one 
+#           of the packages must specify a priority.
+# 
+#  "dependency_location"
+#           This describes where the condition must be satisfied.
+# 
+#           This parameter is optional. If it is not specified, the default
+#           value "same_node" will be used.
+# 
+#           The possible values for this attribute depend on the
+#           dependency condition.
+#   
+#           If an "up" dependency is specified, the possible values
+#           are "same_node", "any_node", and "different_node".
+# 
+#           "same_node" means the dependency must be satisfied on
+#           the same node.
+# 
+#           "any_node" means the dependency can be satisfied on
+#           any node in the cluster.
+# 
+#           "different_node" means the dependency must be satisfied
+#           on a node other than the dependent package's node.
+# 
+#           If a "down" dependency is specified, the possible values
+#           are "same_node" and "all_nodes".
+# 
+#           "same_node" means the package depended on must be down on
+#           the same node.
+#           
+#           "all_nodes" means the package depended on must be down on
+#           all nodes in the cluster.
+# 
+#  NOTE: 
+#  Within a package, you cannot specify more than one dependency on the 
+#  same package. For example, pkg1 cannot have one same_node and one
+#  any_node dependency on pkg2.
+# 
+#  When a package requires that another package be up and the 
+#  dependency_location is any_node or different_node, the priority of the
+#  the package depended on must be higher or equal to the dependent
+#  package and its dependents. For example, if pkg1 has a same_node
+#  dependency on pkg2 and pkg2 has an any_node dependency on pkg3, 
+#  the priority of pkg3 must be higher or equal to the priority of
+#  pkg1 and pkg2.
+# 
+#  In a CFS cluster, the dependencies among the mount point, disk group,
+#  and system multi-node packages are automatically created by the commands
+#  that construct those packages.
+# 
+#  Example 1 : To specify a "same_node" dependency between pkg1 and pkg2:
+#            pkg1's ascii configuration file:
+# 
+#            dependency_name         pkg2_dep
+#            dependency_condition    pkg2 = up
+#            dependency_location     same_node
+# 
+#  Example 2 : To specify a "same_node" exclusion dependency between
+#  
+#           pkg1 and pkg2:
+#            
+#            pkg1's ascii configuration file:
+# 
+#            dependency_name         pkg2_dep
+#            dependency_condition    pkg2 = down
+#            dependency_location     same_node
+# 
+#            pkg2's ascii configuration file:
+# 
+#            dependency_name         pkg1_dep
+#            dependency_condition    pkg1 = down
+#            dependency_location     same_node
+# 
+# 
+#            Note that pkg1 and pkg2 must be applied at the same time.
+#     
+# Legal values for dependency_name:
+#   Any string that starts and ends with an alphanumeric character, and 
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_) 
+#   in the middle.
+#   Maximum string length is 39 characters. 
+#       
+# Legal values for dependency_condition: <Any String>
+# Legal values for dependency_location: same_node, any_node, different_node, all_nodes.
+
+#dependency_name                        
+#dependency_condition                   
+#dependency_location                    
+
+# The package weight parameters are the "weight_name" and "weight_value".
+#     
+# 
+# These optional attributes provide additional data which the
+# Serviceguard package manager uses when selecting a node on which to
+# place the package.  As with all attribute names, they are case
+# insensitive.
+# 
+# A package can use this mechanism to define up to four arbitrary
+# weight names with corresponding values that are meant to represent
+# the runtime resource consumption of the package. In the cluster
+# configuration file, you configure capacity limits for the named
+# weights on the cluster nodes.  During package placement,
+# the package manager will ensure the total value of any given named
+# weight does not exceed the capacity limit configured for the node.
+# 
+# The "weight_name" is string of up to 39 characters.
+# The "weight_value" specifies a value for the named weight that
+# precedes it. This is an unsigned floating point value between 0 and
+# 1000000 with at most three digits after the decimal point.
+# 
+# If "weight_name" is specified, "weight_value" must also be specified
+# and "weight_name" must come first. To specify more than one weight,
+# repeat this process.
+# 
+# You can define weights either individually within each package
+# configuration file, or by means of a default value in the
+# cluster configuration file that applies to all configured
+# packages (except system multi-node packages). If a particular
+# weight name is defined in both the cluster and package
+# configuration files, the value specified in the package
+# configuration file takes precedence.  This allows you to set
+# an overall default, but to override it for a particular package.
+# 
+# For example, if you specify WEIGHT_NAME "memory" with WEIGHT_DEFAULT
+# 1000 in the cluster configuration file, and you do not specify a weight
+# value for "memory" in the package configuration file for pkgA, pkgA's
+# "memory" weight will be 1000. If you define a weight value of 2000 for
+# "memory" in the configuration file for pkgA, pkgA's "memory" weight
+# will be 2000.
+# 
+# If no WEIGHT_NAME/WEIGHT_DEFAULT value is specified in the cluster
+# configuration file for a given CAPACITY, and weight_name and weight_value
+# are not specified in this package configuration file for that CAPACITY,
+# then the weight_value for this package is set to zero or one depending
+# on the capacity name. If the capacity name is the reserved capacity
+# "package_limit", the weight_value for this package is set to one;
+# otherwise, the weight_value is set to zero.
+# For example, if you specify CAPACITY "memory" and do not specify
+# a WEIGHT_DEFAULT for "memory" in the cluster configuration file,
+# and do not specify weight "memory" in the package configuration
+# file for pkgA, then pkgA's "memory" weight will be zero.
+# 
+# Note that cmapplyconf will fail if you define a weight in the
+# package configuration file and no node in the cluster configuration
+# file specifies a capacity of the same name.
+# 
+# Weight can be assigned only to multi-node packages, and  failover packages
+# with configured_node as the failover_policy and manual as failback policy.
+# 
+# For more information on how to configure default weights and
+# node capacities, see the cmquerycl man page, the cluster configuration
+# template file, and the Managing Serviceguard manual.
+# 
+# Example : 
+#            weight_name      package_limit
+#            weight_value     10
+# 
+# This overrides the default value of 1 and sets the weight for this
+# package to 10
+#     
+# Legal values for weight_name:
+#   Any string that starts and ends with an alphanumeric character, and 
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_) 
+#   in the middle.
+#   Maximum string length is 39 characters. 
+#       
+# Legal values for weight_value:
+#   Any unsigned floating point string. Only 3 digits after the decimal point
+#   are significant.  Maximum string length is 11 characters.
+#       
+
+#weight_name                    
+#weight_value                   
+
+# "local_lan_failover_allowed" will allow LANs to be switched locally.
+#     
+# Possible values are "yes" and "no".
+# The default for "local_lan_failover_allowed" is "yes".  In the event of a
+# failure, this permits the Serviceguard to switch LANs locally
+# (transfer to a standby LAN card).  Adjust as necessary.
+# 
+# "local_lan_failover_allowed" replaces "net_switching_enabled".
+#     
+# Legal values for local_lan_failover_allowed: yes, no.
+
+local_lan_failover_allowed                      yes
+
+# "monitored_subnet" specifies the addresses of subnets that are to be
+#  monitored for this package.
+#     
+# Enter the network subnet name that is to be monitored for this package.
+# Repeat this line as necessary for additional subnet names.  If any of
+# the subnets defined goes down, the package will be switched to another
+# node that is configured for this package and has all the defined subnets
+# available.
+# 
+# "monitored_subnet" replaces "subnet".
+# 
+# The monitored_subnet names can be IPv4 or IPv6, or a mix of both.
+# 
+#  Example : 
+#     monitored_subnet           192.10.25.0    # (netmask=255.255.255.0)
+#     monitored_subnet           2001::/64      # (netmask=ffff:ffff:ffff:ffff::)
+#     monitored_subnet           2001::         # (netmask=ffff:ffff:ffff:ffff::)
+#     
+# Legal values for monitored_subnet: <Any String>
+# "monitored_subnet_access" defines how the monitored_subnet is
+# configured in the cluster.
+#          
+# 
+# monitored_subnet_access defines whether access to a monitored_subnet
+# is configured on all of the nodes that can run this package, or only
+# some. Possible values are "partial" and "full". "partial" means that
+# the monitored_subnet is expected to be configured on one or more of
+# the nodes this package can run on, but not all. "full" means that the
+# monitored_subnet is expected to be configured on all the nodes that
+# this package can run on. "full" is the default. (Specifying "full" is
+# equivalent to not specifying the monitored_subnet_access at all.)  
+# 
+# The monitored_subnet_access is defined per monitored_subnet entry. 
+# 
+#  Example : 
+#     monitored_subnet           192.10.25.0
+#     monitored_subnet_access    partial    # 192.10.25.0 is available on one 
+#                                         # or more nodes of the cluster, 
+#                                           # but not all.   
+# 
+#     monitored_subnet           192.10.26.0 # no monitored_subnet_access entry,
+#                                            # hence this subnet is available
+#                                            # on all nodes of the cluster.
+#     monitored_subnet           2001::/64 
+#     monitored_subnet_access    full       # 2001::/64 is available on all 
+#                                         # nodes of the cluster.
+# 
+# Legal values for monitored_subnet_access: partial, full.
+
+monitored_subnet        10.66.248.0                     
+#monitored_subnet_access                        
+
+# "cluster_interconnect_subnet" specifies subnets that are to be monitored for 
+#  a SGeRAC multi-node package.
+#     
+# This parameter requires an IPV4 or IPV6 address. cluster_interconnect_subnets 
+# can be configured only for multi_node packages in SGeRAC configurations.
+# 
+# Legal values for cluster_interconnect_subnet: <Any String>
+
+#cluster_interconnect_subnet                    
+
+# ip subnets and addresses
+# 
+# "ip_subnet" and "ip_address" specify subnets and 
+# IP addresses used by this package.
+# "ip_subnet_node" specify the nodes on which the subnet is available.
+#      
+# Enter the network subnet name that is to be used by this package,
+# along with all the relocatable IP addresses on this subnet to be used 
+# by this package. Repeat these lines as necessary for additional subnet 
+# names and relocatable IP addresses. The subnets and relocatable 
+# addresses can be IPv4 or IPv6, or a mix of both.
+# 
+# For each subnet line, enter the name of the nodes on which this subnet
+# is available. This is an optional parameter. Default is set to all
+# nodes in the cluster.
+# 
+# For example, if this package uses a subnet 192.10.25.0 and 2 IP 
+# addresses 192.10.25.12 and 192.10.25.13 enter:
+#     ip_subnet           192.10.25.0
+#     # (netmask=255.255.255.0)
+#     ip_address          192.10.25.12
+#     ip_address          192.10.25.13
+# 
+# (No ip_subnet_node entry means that subnet 192.10.25.0 is available on
+# all nodes of the cluster).
+# 
+# Hint: Run "netstat -i" and look at the Network field to see the 
+# available subnets.
+# 
+# However if only two nodes out of a four node cluster would have this
+# subnet available, enter:
+#     ip_subnet           192.10.25.0
+#     ip_subnet_node    nodeA
+#     ip_subnet_node    nodeB
+#     # (netmask=255.255.255.0)
+#     ip_address          192.10.25.12
+#     ip_address          192.10.25.13
+# 
+# 
+# For example, if this package uses two IPv6 addresses 2001::1/64 and 2001::2/64, 
+# the address prefix identifies the subnet as 2001::/64, which is an available
+# subnet.
+# Enter:
+#     ip_subnet           2001::/64
+#     # (netmask=ffff:ffff:ffff:ffff::)
+#     ip_address          2001::1
+#     ip_address          2001::2
+# 
+# Alternatively the IPv6 IP/Subnet pair can be specified without the prefix 
+# for the IPv6 subnet.
+# Enter:
+#     ip_subnet           2001:: 
+#     # (netmask=ffff:ffff:ffff:ffff::)
+#     ip_address          2001::1
+#     ip_address          2001::2
+# 
+# Hint: In this case, run "netstat -i" and look at the address prefixes
+# to find the available IPv6 subnets.
+# 
+# Note that "ip_address" specifies a relocatable IP address, which will 
+# be added and removed when the package starts and halts.
+# 
+# "ip_subnet" replaces the legacy package control script parameter "subnet".
+# "ip_address" replaces the legacy package control script parameter "ip".
+#      
+# Legal values for ip_subnet: <Any String>
+# Legal values for ip_subnet_node: /^[0-9A-Za-z][0-9A-Za-z_.\-]*[0-9A-Za-z]$/, /^[0-9A-Za-z]$/.
+# Legal values for ip_address: <Any String>
+
+ip_subnet               10.66.248.0             
+#ip_subnet_node                 
+ip_address              10.66.249.31                    
+
+# Services: A service is an long lived (daemon) executable which
+# Serviceguard will monitor while the package is up.
+# 
+# "service_name", "service_cmd", "service_restart", "service_fail_fast_enabled" 
+# and "service_halt_timeout" specify a service for this package.
+#     
+# "service_cmd" is the command line to be executed to start the service.
+# 
+# The value for "service_restart" can be "unlimited", "none" or any
+# positive integer value. If the value is "unlimited" the service will be
+# restarted an infinite number of times. If the value is "none", the
+# service will not be restarted. If the value is a positive integer,
+# the service will be restarted the specified number of times
+# before failing. The default is "none".
+# 
+# The value for "service_fail_fast_enabled" can be either "yes" or 
+# "no".  The default is "no". If "service_fail_fast_enabled" is set to 
+# "yes", and the service fails, Serviceguard will halt the node on which
+# the service is running.
+# 
+# "service_halt_timeout" is a number of seconds.
+# This timeout is used to determine the length of time     
+# Serviceguard will wait for the service to halt before a SIGKILL signal 
+# is sent to force the termination of the service.  In the event of a 
+# service halt, Serviceguard will first send a SIGTERM signal to 
+# terminate the service.  If the service does not halt, Serviceguard will
+# wait for the specified "service_halt_timeout", then send
+# the SIGKILL signal to force the service to terminate. 
+# This timeout value should be large enough to allow all cleanup
+# processes associated with the service to complete.  If the   
+# "service_halt_timeout" is not specified, a zero timeout will be
+# assumed, meaning the cluster software will not wait at all   
+# before sending the SIGKILL signal to halt the service.       
+# 
+# Example: 
+#     service_name               service_1a           
+#     service_cmd                "/usr/bin/X11/xclock -display 192.10.25.54:0"
+#     service_restart            none
+#     service_fail_fast_enabled  no                   
+#     service_halt_timeout       300                  
+# 
+#     service_name               service_1b
+#     service_cmd                "/usr/bin/X11/xload -display 192.10.25.54:0"
+#     service_restart            2
+#     service_fail_fast_enabled  no                   
+#     service_halt_timeout       300                  
+# 
+#     service_name               service_1c
+#     service_cmd                "/usr/sbin/ping node_a"
+#     service_restart            unlimited
+#     service_fail_fast_enabled  no                   
+#     service_halt_timeout       300                  
+# 
+# Note: Default shell is /usr/bin/sh.
+#     
+# Legal values for service_name:
+#   Any string that starts and ends with an alphanumeric character, and 
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_) 
+#   in between.
+#   Maximum string length is 39 characters. 
+#       
+# Legal values for service_cmd: <Any String>
+# Legal values for service_restart: none, unlimited, (value > 0).
+# Legal values for service_fail_fast_enabled: yes, no.
+# Legal values for service_halt_timeout: (value >= 0).
+
+service_name                    nfs.monitor
+service_cmd                     "$SGCONF/scripts/nfs/nfs_upcc.mon"
+service_restart                 none
+service_fail_fast_enabled                       no
+service_halt_timeout                    1
+
+# Generic resource Dependencies
+# 
+# Generic resource dependencies are specified with the following
+# parameters: "generic_resource_name", "generic_resource_evaluation_type"
+# and "generic_resource_up_criteria".
+#     
+# To define a package generic resource dependency, a
+# "generic_resource_name" line is required. 
+# "generic_resource_evaluation_type" is optional and will default to
+# "during_package_start" if not specified. 
+# "generic_resource_up_criteria" is optional and will default to N/A
+# if not specified.
+# 
+# If the monitoring of a generic resource is required to be
+# started and stopped as part of the package then the
+# monitoring executable/script has to be configured as a 
+# service. This can be achieved by configuring a service_name and
+# a service_cmd containing the full path name of the monitoring
+# executable/script.
+# 
+# The "generic_resource_evaluation_type" option can be set to either
+# "during_package_start" or "before_package_start".
+# The default is "during_package_start". "during_package_start" means 
+# resource monitoring will be started and stopped as part of the package
+# as indicated by service_name and service_cmd.
+# 
+# "before_package_start" means resource monitoring must be started before
+# the package start and all the resources have to be UP on a given node
+# for the package to be started on that node.
+# 
+# "generic_resource_up_criteria" requires an operator and a value. This 
+# defines the generic resource 'UP' condition. The allowed operators are
+# ==, !=, >, <, >= and <=. Values have to be positive integer values 
+# ranging from 1 to 2147483647. 
+# For example,
+#     
+#     generic_resource_up_criteria           <= 100
+#     
+# Example 1: Monitoring of generic resource is part of package
+# 
+#           generic_resource_name                  sfm_disk
+#           generic_resource_evaluation_type       during_package_start
+#           
+#           service_name                           sfm_disk_monitor
+#           service_cmd                            /etc/cmcluster/pkg/sfm_disk_monitor
+# 
+# Example 2: Monitoring of generic resource is not a part of package.
+# 
+#           generic_resource_name                  sfm_disk
+#           generic_resource_evaluation_type       before_package_start
+# 
+# Example 3: Monitoring of generic resource configured in a different package.
+# 
+#           generic_resource_name                  sfm_disk
+#           
+# Example 4: Monitoring of generic resource with up_criteria
+#           
+#           generic_resource_name                  sfm_disk
+#           generic_resource_evaluation_type       during_package_start
+#           generic_resource_up_criteria           <= 100
+#           
+# Uncomment the following lines to specify package generic resource dependencies.
+#     
+# Legal values for generic_resource_name:
+#   Any string that starts and ends with an alphanumeric character, and
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_)
+#   in between.
+#   Maximum string length is 39 characters.
+#       
+# Legal values for generic_resource_evaluation_type: during_package_start, before_package_start.
+# Legal values for generic_resource_up_criteria: /^[=!><][=][ ]*[0-9]*$/, /^[<>][ ]*[0-9]*$/, N/A.
+
+#generic_resource_name                  
+#generic_resource_evaluation_type                       
+#generic_resource_up_criteria                   
+
+# Event Monitoring Service Resource Dependencies
+# 
+# Event monitoring service resource dependencies are specified with the
+# following parameters: "resource_name", "resource_polling_interval", 
+# "resource_start" and "resource_up_value".
+#     
+# To define a package resource dependency, a "resource_name" line with 
+# a fully qualified resource path name, and one or more 
+# "resource_up_value" lines are required. "resource_polling_interval" and
+# the "resource_start" are optional, and will default as described 
+# below if not specified.       
+# 
+# The "resource_polling_interval" indicates how often, in seconds, the   
+# resource is to be monitored.  The default is 60 seconds.
+# 
+# The "resource_start" option can be set to either "automatic" or "deferred".
+# The default is "automatic".  "automatic" means Serviceguard will 
+# start up resource monitoring for this resource automatically when the 
+# node starts up. If "deferred" is specified, Serviceguard will not 
+# attempt to start this resource at node start up.
+# 
+# "resource_up_value" requires an operator and a value.  This defines    
+# the resource 'UP' condition.  The operators are =, !=, >, <, >=,     
+# and <=, depending on the type of value.  Values can be string or     
+# numeric.  If the type is string, then only = and != are valid        
+# operators.  If the string contains white space, it must be enclosed   
+# in quotes.  String values are case sensitive.  For example,          
+# 
+#                                       Resource is up when its value is
+#                                       --------------------------------
+#     resource_up_value  = UP           "UP"
+#     resource_up_value  != DOWN        Any value except "DOWN"
+#     resource_up_value  = "On Course"  "On Course"
+# 
+# If the type is numeric, then it can specify a threshold, or a range to
+# define a resource up condition.  If it is a threshold, then any operator
+# may be used.  If a range is to be specified, then only > or >= may be used
+# for the first operator, and only < or <= may be used for the second operator.
+# For example,
+#                                       Resource is up when its value is
+#                                       --------------------------------
+#     resource_up_value  = 5            5                   (threshold)
+#     resource_up_value  > 5.1          greater than 5.1    (threshold)
+#     resource_up_value  > -5 and <     10       between -5 and 10   (range)
+# 
+# Note that "and" is required between the lower limit and upper limit
+# to specify a range.  The upper limit must be greater than the lower 
+# limit.  If "resource_up_value" is repeated within a "resource_name" block, then 
+# they are inclusively OR'd together. (Additional package resource dependencies are defined by repeating the entire "resource_name" block.)
+# 
+# Example : resource_name               /net/interfaces/lan/status/lan0
+#           resource_polling_interval   120
+#           resource_start              automatic
+#           resource_up_value           = running 
+#           resource_up_value           = online 
+# 
+#           Means that the value of resource /net/interfaces/lan/status/lan0
+#           will be checked every 120 seconds, and is considered to
+#           be 'up' when its value is "running" or "online".
+# 
+# Uncomment the following lines to specify package resource dependencies.
+#     
+# Legal values for resource_name: <Any String>
+# Legal values for resource_polling_interval: ( (value > 0) && (value <= 86400) ).
+# Legal values for resource_start: automatic, deferred.
+# Legal values for resource_up_value: <Any String>
+
+#resource_name                  
+#resource_polling_interval                      
+#resource_start                 
+#resource_up_value                      
+
+# "concurrent_vgchange_operations" is the number of concurrent volume 
+# group operations allowed.
+#      
+# Volume, CVM disk and VxVM disk groups
+# 
+# concurrent vgchange operations
+# Specify the number of concurrent volume group activations or
+# deactivations to allow during package startup or shutdown. The default
+# is 0.  Setting this value to an appropriate number may improve
+# performance when the package needs to activate or deactivate a large
+# number of volume groups.
+#      
+# Legal values for concurrent_vgchange_operations: (value > 0).
+
+concurrent_vgchange_operations                  1
+
+# "threaded_vgchange" provides a way to enable/disable multi-threaded 
+# option of vgchange during voume group activation.
+#     
+# multi-threaded vgchange :
+# It specifies whether  multi-threaded option of vgchange, if available, 
+# should be used during volume group activation. The default value is 0. 
+# To turn on multi-threaded option, set value to 1.
+# Multi-threaded vgchange has potential performance benefits. 
+# If the activation order of the paths defined in lvmtab is important then
+# multi-threaded vgchange should not be used. If mirrored volume groups
+# are synced during activation then using mutli-threaded vgchange may
+# worsen performance. 
+# Using the multi-threaded vgchange option can improve the activation 
+# performance of volume groups with multiple disks. 
+# concurrent_vgchange_operations option is beneficial when multiple volume 
+# groups need to be activated. To get the best performance for volume group 
+# activation, use the multi-threaded vgchange option in combination with 
+# concurrent_vgchange_operations option.
+#     
+# Legal values for enable_threaded_vgchange: (value >= 0 && value <= 1).
+
+enable_threaded_vgchange                        0
+
+# "vgchange_cmd" is the method of activation for LVM volume groups.
+#      
+# volume group activation: 
+# Specify the method of activation for volume groups.
+# Leave the default (vgchange_cmd  "vgchange -a e") if you want volume
+# groups activated in exclusive mode. This assumes the volume groups have
+# been initialized with "vgchange -c "' at the time of creation.
+# 
+# Uncomment the first line (vgchange_cmd  "vgchange -a e -q n"), and comment 
+# out the default, if your disks are mirrored on separate physical paths,
+# 
+# Uncomment the second line (vgchange_cmd  "vgchange -a e -q n -s"), and 
+# comment out the default, if your disks are mirrored on separate physical
+# paths, and you want the mirror resynchronization to occur in parallel
+# with the package startup.
+# 
+# Uncomment the third line (vgchange_cmd  "vgchange -a s"), and comment
+# out the default, if you want volume groups activated in shared mode. 
+# 
+# Uncomment the fourth line (vgchange_cmd  "vgchange -a s -q n"), and comment 
+# out the default, if you want volume groups activated in shared mode, 
+# and your disks are mirrored on separate physical paths,
+# 
+# Uncomment the fifth line (vgchange_cmd  "vgchange -a y") if you wish to 
+# use non-exclusive activation mode. Single node cluster configurations
+# must use non-exclusive activation.
+# 
+# vgchange_cmd              "vgchange -a e -q n"
+# vgchange_cmd              "vgchange -a e -q n -s"
+# vgchange_cmd              "vgchange -a s"
+# vgchange_cmd              "vgchange -a s -q n"
+# vgchange_cmd              "vgchange -a y"
+# 
+# "vgchange_cmd" replaces the legacy package control script parameter "vgchange".
+#      
+# Legal values for vgchange_cmd: <Any String>
+
+vgchange_cmd                    "vgchange -a e"
+
+# "cvm_activation_cmd" is the method of activation for CVM disk groups.
+#      
+# CVM disk group activation: 
+# Specify the method of activation for CVM disk groups.
+# Leave the default
+# (cvm_activation_cmd  vxdg -g \${DiskGroup} set activation=exclusivewrite)
+# if you want disk groups activated in the exclusive write mode.
+# 
+# Uncomment the first line
+# (cvm_activation_cmd  vxdg -g \${DiskGroup} set activation=readonly),
+# and comment out the default, if you want disk groups activated in
+# the readonly mode.
+# 
+# Uncomment the second line
+# (cvm_activation_cmd  vxdg -g \${DiskGroup} set activation=sharedread),
+# and comment out the default, if you want disk groups activated in the
+# shared read mode.
+# 
+# Uncomment the third line
+# (cvm_activation_cmd  vxdg -g \${DiskGroup} set activation=sharedwrite),
+# and comment out the default, if you want disk groups activated in the
+# shared write mode.
+# 
+# cvm_activation_cmd  "vxdg -g \${DiskGroup} set activation=readonly"
+# cvm_activation_cmd  "vxdg -g \${DiskGroup} set activation=sharedread"
+# cvm_activation_cmd  "vxdg -g \${DiskGroup} set activation=sharedwrite"
+#      
+# Legal values for cvm_activation_cmd: <Any String>
+
+cvm_activation_cmd                      "vxdg -g \${DiskGroup} set activation=exclusivewrite"
+
+# Volume Recovery
+# 
+# "vxvol_cmd" is the method of recovery for mirrored VxVM volumes.
+#      
+# When mirrored VxVM volumes are started during the package control
+# startup, and mirror resynchronization is required, the default behavior is for
+# the package control script to wait until the resynchronization has been
+# completed.
+# 
+# To allow mirror resynchronization to occur in parallel with
+# the package startup, uncomment the line
+# vxvol_cmd  "vxvol -g \${DiskGroup} -o bg startall" and comment 
+# out the default.
+# 
+# vxvol_cmd  "vxvol -g \${DiskGroup} -o bg startall"
+# 
+# "vxvol_cmd" replaces the legacy package control script parameter "vxvol".
+#      
+# Legal values for vxvol_cmd: <Any String>
+
+vxvol_cmd                       "vxvol -g \${DiskGroup} startall"
+
+# "vg" is used to specify which volume groups are used by this package.
+#      
+# volume groups
+# 
+# Specify which volume groups are used by this package that do not yet 
+# have file systems mounted on them. Copy one of the example vg configuration
+# line and change the name of the volume group. Add additional VG 
+# specifications for additional volume groups.
+# 
+# For example, if this package uses your volume groups vg01 and vg02, enter:
+#     vg       vg01
+#     vg       vg02
+# 
+# The volume group activation method is defined above. Use the parameters
+# in the filesystem module (fs_name, etc.) to specify the filesystems
+# associated with these volume groups.
+#      
+# Legal values for vg: /^[0-9A-Za-z\/][0-9A-Za-z_.\/\-]*[0-9A-Za-z]$/, /^[0-9A-Za-z]$/.
+
+vg vgmid                        
+
+# CVM disk groups
+# 
+# "cvm_dg" is to specify which cvm disk groups are used by this package.
+#      
+# Specify which CVM disk groups are used by this package. Copy the one
+# of the line from the example and change the name to be your first 
+# disk group. You must specify cvm disk groups whether file systems 
+# are mounted or not.  Add additional "cvm_dg" specifications for 
+# additional cvm disk groups.
+# 
+# For example, if this package uses your disk groups dg01 and dg02, enter:
+#     cvm_dg    dg01
+#     cvm_dg    dg02
+# 
+# The CVM disk group activation method is defined above. The filesystems
+# associated with these volume groups can be specified with the filesystem
+# module.
+#      
+# Legal values for cvm_dg: /^[0-9A-Za-z][0-9A-Za-z_.\-]*[0-9A-Za-z]$/, /^[0-9A-Za-z]$/.
+
+#cvm_dg                 
+
+# VxVM disk groups
+# 
+# "vxvm_dg" is used to specify which VxVM disk groups are used by this package.
+#      
+# Enter the name of VxVM disk group that is used by this package and
+# that does not have file systems mounted on it. Repeat this line for
+# each additional VxVM disk group.
+# 
+# For example, if this package uses your disk groups dg01 and dg02, enter:
+#     vxvm_dg    dg01
+#     vxvm_dg    dg02
+# 
+# The cvm disk group activation method is defined above.
+# 
+# NOTE: A package can have a mix of LVM volume groups, CVM disk groups and VxVM 
+#       disk groups.
+# 
+# NOTE: When VxVM is initialized it will store the hostname of the
+#       local node in its volboot file in a variable called 'hostid'.
+#       The Serviceguard package control scripts use both 
+#       the hostname(1m) command and the VxVM hostid. This means you 
+#       must make sure that the VxVM hostid matches the output of the
+#       hostname(1m) command.
+# 
+#       If you modify the local host name after VxVM has been
+#       initialized and such that hostname(1m) does not equal the
+#       name returned by uname -n, you need to use the vxdctl(1m) 
+#       command to set the VxVM hostid field to the value of 
+#       hostname(1m). Failure to do so will result in the package 
+#       failing to start.
+#      
+# Legal values for vxvm_dg: /^[0-9A-Za-z][0-9A-Za-z_.\-]*[0-9A-Za-z]$/, /^[0-9A-Za-z]$/.
+
+#vxvm_dg                        
+
+# "vxvm_dg_retry" specifies whether to retry VXVM disk group
+# import at package run time.
+#      
+# VXVM Disk group import retry
+# 
+# For packages using VXVM disk groups, if the import of a VXVM
+# disk group fails then this parameter allows you to specify if you want
+# to retry the import of disk group. Setting this parameter to "yes" will
+# execute the command "vxdisk scandisks" to scan for potentially missing 
+# disks that might have caused the datagroup import to fail. This command
+# can take a long time on a system which has a large IO subsystem.          
+# The use of this parameter is recommended in a Metrocluster with EMC SRDF
+# environment.   
+# The legal values are "yes" and "no". The default value is "no".
+#     
+# Legal values for vxvm_dg_retry: yes, no.
+
+vxvm_dg_retry                   no
+
+# "deactivation_retry_count" specifies the number of deactivation retries
+# at package shutdown..
+#      
+# volume group and disk group deactivation retry count
+# 
+# Specify the number of deactivation retries for each disk group and volume 
+# group.
+# 
+# The default is 2. 
+#     
+# Legal values for deactivation_retry_count: (value >= 0).
+
+deactivation_retry_count                        2
+
+# "kill_processes_accessing_raw_devices" specifies whether to kill processes 
+# accessing raw devices at package halt time.
+#      
+# Raw Devices
+# 
+# If raw devices are still being accessed at package halt time, volume
+# group or disk group deactivation can fail, causing the package halt to
+# also fail. This problem usually happens when the application does not
+# shut down properly.
+# 
+# Note that if you are using Oracle's Cluster Ready Service, killing this 
+# service could cause the node to reboot. 
+# 
+# The value that is set for this parameter affects all raw devices associated 
+# with the LVM volume groups and CVM disk groups defined in the package. 
+# 
+# The default is "no". 
+#     
+# Legal values for kill_processes_accessing_raw_devices: yes, no.
+
+kill_processes_accessing_raw_devices                    no
+
+# "concurrent_fsck_operations" specifies the number of concurrent fsck
+# operations.
+#      
+# FILESYSTEMS
+# 
+# Filesystems are defined by entries specifying the logical volume, the
+# mount point, the options for mount, umount and fsck, and the type of
+# the file system. Filesystems can be on a remote host and can be 
+# shared via Network File System (NFS). In case of NFS file systems, 
+# the NFS server name is also specified.
+# Except for NFS file systems, each filesystem will be fsck'd prior to 
+# being mounted. The filesystems will be mounted in the order specified 
+# during package startup and will be unmounted in reverse order during 
+# package shutdown. Ensure that volume groups referenced by the logical 
+# volume definitions below are included in volume group definitions 
+# ("vg") above.
+# 
+# concurrent_fsck_operations
+# 
+# Specify the number of concurrent fsck operation to allow during
+# package startup.  Setting this value to an appropriate number may
+# improve performance if a large number of file systems need to be
+# checked. The default is 1.
+#      
+# Legal values for concurrent_fsck_operations: (value > 0).
+
+concurrent_fsck_operations                      1
+
+# "concurrent_mount_and_umount_operations" specifies
+# the number of concurrent mounts and umounts to allow during
+# package startup and shutdown.
+#      
+# Setting this value to an appropriate number may improve the performance
+# if the package needs to mount and un-mount a large number of file
+# systems. The default is 1.
+# 
+# Example:  If a package uses 50 JFS filesystems, pkg01aa through pkg01bx,
+# which are mounted on the 50 logical volumes lvol1..lvol50 for read and write
+# operation, you may enter the following:
+# 
+#      concurrent_fsck_operations 50
+#      concurrent_mount_and_umount_operations 50
+# 
+#      fs_name /dev/vg01/lvol1
+#      fs_server ""
+#      fs_directory /pkg01aa
+#      fs_mount_opt "-o rw"
+#      fs_umount_opt "-s"
+#      fs_fsck_opt "-s"
+#      fs_type "vxfs"
+# 
+#      fs_name /dev/vg01/lvol2
+#      fs_server ""
+#      fs_directory /pkg01ab
+#      fs_mount_opt "-o rw"
+#      fs_umount_opt "-s"
+#      fs_fsck_opt "-s"
+#      fs_type "vxfs"
+# 
+#      :
+#      :
+#      :
+# 
+#      fs_name /dev/vg01/lvol50
+#      fs_server ""
+#      fs_directory /pkg01bx
+#      fs_mount_opt "-o rw"
+#      fs_umount_opt "-s"
+#      fs_fsck_opt "-s"
+#      fs_type "vxfs"
+#      
+# Legal values for concurrent_mount_and_umount_operations: (value > 0).
+
+concurrent_mount_and_umount_operations                  1
+
+# "fs_mount_retry_count" specifies the number of mount retries.
+#      
+# The default is 0. During startup, if a mount point is busy 
+# and "fs_mount_retry_count" is 0, package startup will fail and 
+# the script will exit with 1.  If a mount point is busy and
+# "fs_mount_retry_count" is greater than 0, the script will attempt 
+# to kill the user process responsible for the busy mount point 
+# ("fuser -ku") and then mount the file system.  It will 
+# do this the number of times specified in "fs_mount_retry_count".
+# If the mount still fails after this number of attempts, the script
+# will exit with 1.
+# 
+#      
+# Legal values for fs_mount_retry_count: (value >= 0).
+
+fs_mount_retry_count                    0
+
+# "fs_umount_retry_count" specifies the number of unmount retries for
+# each filesystem during package shutdown.
+#      
+# The default is 1.  During package halt time, if a mount point is busy
+# the script will attempt to kill the user responsible for the busy
+# mount point and then umount the file system.  It will attempt to kill
+# user and retry umount, for the number of times specified in
+# "fs_umount_retry_count".  If the umount still fails after this number
+# of attempts, the script will invoke forcible unmount "vxumount -o
+# force" command. If the forcible unmount command fails, the script will 
+# exit with 1.
+# 
+# NOTE: The script will execute "fuser -ku" to free up busy mount point by
+# default.
+# 
+# "fs_umount_retry_count" replaces the legacy package control script
+# parameter "fs_umount_count".
+#      
+# Legal values for fs_umount_retry_count: (value > 0).
+
+fs_umount_retry_count                   1
+
+# "fs_name", "fs_server", "fs_directory", "fs_mount_opt", "fs_umount_opt", "fs_fsck_opt", and 
+# "fs_type" specify the filesystems which are used by this package.
+#      
+# Note: The "fs_type" parameter lets you specify the type of filesystem to be 
+# mounted. Specifying a particular "fs_type" will improve package failover time.  
+# The "fsck_opt" and "fs_umount_opt" parameters can be used to include the 
+# -s option with the fsck and umount commands to improve performance for 
+# environments that use a large number of filesystems. (An example of a 
+# large environment is given earlier following the description of the 
+# "concurrent_mount_and_umount_operations" parameter.)
+# 
+# An NFS file system must not be configured as a multi-node package 
+# except when it is being used as the backing store for an HPVM guest 
+# and as specified in the HPVM documentaion.
+# Do not use a multi-node NFS package for any other application.
+# 
+# Example: If a package uses two JFS filesystems, pkg01a and pkg01b, 
+# which are mounted on LVM logical volumes lvol1 and lvol2 for read and 
+# write operation, you would enter the following:
+# 
+#     fs_name          /dev/vg01/lvol1
+#     fs_server        ""
+#     fs_directory     /pkg01a
+#     fs_type          "vxfs"
+#     fs_mount_opt     "-o rw"
+#     fs_umount_opt    ""
+#     fs_fsck_opt      ""
+# 
+#     FS_NAME          /dev/vg01/lvol2
+#     FS_SERVER        ""
+#     FS_DIRECTORY     /pkg02a
+#     FS_TYPE          "vxfs"
+#     FS_MOUNT_OPT     "-o rw"
+#     FS_UMOUNT_OPT    ""
+#     FS_FSCK_OPT      ""
+# 
+#     fs_name          /tmp/nfs/share1
+#     fs_server        nfssrv 
+#     fs_directory     /mnt/nfs/share1
+#     fs_type          "nfs"
+#     fs_mount_opt     "-o llock"
+#     fs_umount_opt    ""
+#     fs_fsck_opt      ""
+# 
+#     fs_name          /tmp/nfs/share2
+#     fs_server        fec0::9303:0:0:a93:3
+#     fs_directory     /mnt/nfs/share2
+#     fs_type          "nfs"
+#     fs_mount_opt     "-o llock,hard"
+#     fs_umount_opt    ""
+#     fs_fsck_opt      ""
+# 
+# Nested mount points may also be configured.
+# 
+# "fs_name" replaces the legacy package control script parameter "lv".
+# 
+# Note:  File system can be available remotely and can be shared and 
+# mounted view Network File System.
+# 
+# "fs_server" is used to specify the host name or IP address of the host 
+# which shares the file system. "fs_server" is available only with 
+# modular packages and must be specified with fs_type as "nfs".
+# 
+# "fs_directory" replaces the legacy package control script parameter "fs".
+# 
+# 
+# Legal values for fs_name: /^[^"|]+$/.
+# Legal values for fs_server: /^[0-9A-Za-z][0-9A-Za-z_.:\-]*[0-9A-Za-z]$/, /[:space:]*/.
+# Legal values for fs_directory: /^[^"|]+$/.
+# Legal values for fs_type: <Any String>
+# Legal values for fs_mount_opt: <Any String>
+# Legal values for fs_umount_opt: <Any String>
+# Legal values for fs_fsck_opt: <Any String>
+
+fs_name                 /dev/vgmid/lvmid                        
+fs_server               ""                      
+fs_directory            /mid    
+fs_type                 vxfs
+fs_mount_opt            ""                      
+fs_umount_opt           ""                      
+fs_fsck_opt             ""                      
+
+# "pev_<name>" defines an environment variable for the package.
+#      
+# package environment variable
+# 
+# You can define one or more variables which will be set as environment
+# variables for scripts identified by external script and external pre
+# script to use.
+# 
+# The name is a string with the prefix "pev_", that contains only 
+# alphanumeric characters and underscores(_), for example 
+# pev_monitoring_interval.  
+# The value is a string that can contain any character except the pipe (|). 
+# For example, to define a variable pev_monitoring_interval with 
+# a value of 30, enter:
+#       
+# pev_monitoring_interval 30
+# 
+# The maximum length for the name (including the prefix) is MAXPATHLEN
+# characters long.
+# 
+# The maximum length for the value is MAXPATHLEN characters long.
+# 
+# The prefixed parameter name is case insensitive. The prefix defined 
+# as "pev_" can be either upper case or lowercase as well. However, 
+# when used in the control script context, the name is set to 
+# all upper case characters as an environment variable.
+# 
+# Serviceguard checks only the syntax of package environment
+# variables. The values can be validated by means of "validate" section
+# in the external script. The section will be called automatically by
+# "cmcheckconf -P" and "cmapplyconf -P".
+#      
+# Legal values for pev_<name>: /^[^|]+$/.
+
+#pev_
+
+# "external_pre_script" specifies the full path of an additional script 
+# to be run during package start and halt time. Use of Serviceguard environment
+# variables is allowed.
+#      
+# external_pre_script  <program path name>
+# 
+# The specified "external_pre_script" will be executed before
+# any volume groups and disk groups are activated during package
+# validation and start time. It will be executed after any volume groups
+# and disk groups are deactivated during package halt time.
+# 
+# When the program is run the first argument "$1" will be set to "start"
+# when starting, "stop" when halting and "validate" when doing a cmapplyconf
+# or cmcheckconf.  
+# 
+# If more than one "external_pre_script" is specified, the one specified first 
+# in this file will be run first during package start time, and last 
+# during package halt time.
+# 
+# NOTE: Same "external_pre_script" program cannot be specified more than once
+# in the package configuration file. Each "external_pre_script" program must be
+# unique.
+# 
+# NOTE: When "external_pre_script" is configured as part of modular CFS packages
+# they should not be used to start up applications.
+# Users are strongly recommended to keep the execution time of the scripts as 
+# short as possible.
+# 
+# NOTE: All "external_pre_script" programs will be run with the first argument "$1"
+#       set to "validate" when the package is applied to the configuration.
+# 
+# Examples:
+# 
+# external_pre_script /etc/cmcluster/packages/pkg1a/task0
+# external_pre_script /etc/cmcluster/packages/pkg1a/task1
+# external_pre_script /etc/cmcluster/packages/pkg1a/task2
+# 
+# The following is the sequence of standard steps (for a package without
+# external scripts):
+# 
+#     Package starting                 |   Package halting
+#                                      |
+#     STEP            SG_SCRIPT_ACTION |   STEP             SG_SCRIPT_ACTION
+#                                      |
+#     START                            |   START
+#     VOLUME_GROUPS         start      |   DEFERRED_RESOURCES     stop
+#     FILESYSTEMS           start      |   SERVICES               stop
+#     IP_ADDRESSES          start      |   IP_ADDRESSES           stop
+#     SERVICES              start      |   FILESYSTEMS            stop
+#     DEFERRED_RESOURCES    start      |   VOLUME_GROUPS          stop
+#     END                              |   END
+# 
+# When a package includes external_pre scripts, the steps are executed
+# in the following order (for both validation and execution):
+# 
+#     START
+#     /etc/cmcluster/packages/pkg1a/task0 start
+#     /etc/cmcluster/packages/pkg1a/task1 start
+#     /etc/cmcluster/packages/pkg1a/task2 start
+#     VOLUME_GROUPS 
+#     FILESYSTEMS        
+#     IP_ADDRESSES       
+#     SERVICES          
+#     DEFERRED_RESOURCES 
+#     END
+# 
+# When the package halts, the steps are executed in the following order:
+# 
+#     START
+#     DEFERRED_RESOURCES 
+#     SERVICES          
+#     IP_ADDRESSES       
+#     FILESYSTEMS       
+#     VOLUME_GROUPS 
+#     /etc/cmcluster/packages/pkg1a/task2 stop
+#     /etc/cmcluster/packages/pkg1a/task1 stop
+#     /etc/cmcluster/packages/pkg1a/task0 stop
+#     END
+# 
+# A script template is available at $SGCONF/examples/external_script.template
+#      
+# Legal values for external_pre_script: /^./|^/[0-9A-Za-z][\/0-9A-Za-z_.:\-]*[0-9A-Za-z]$/, /^\$SG(CONF|LBIN|SBIN|RUN|FFLOC|LIB)/[0-9A-Za-z][\/0-9A-Za-z_.:\-]*[0-9A-Za-z]$/.
+
+#external_pre_script                    
+
+# "external_script" specifies the full path of additional programs or scripts to 
+# be run during package starts and halt time.  Use of Serviceguard environment
+# variables is allowed. 
+#      
+# external_script  <program path name>
+# 
+# The "external_script" replaces the customer_defined_run_cmds() and
+# customer_defined_halt_cmds() function in the legacy package control script.
+# 
+# The specified "external_script" program will be executed after IP 
+# addresses are assigned but before services are started during package 
+# validation and start time. It will be executed after services are 
+# halted but before removing IP addresses during package halt time.
+# 
+# When the program is run the first argument "$1" will be set to "start"
+# when starting, "stop" when halting and "validate" when doing a cmapplyconf
+# or cmcheckconf.  
+# 
+# If more than one "external_script" is specified, the one specified first 
+# in this file will be run first during package start time, and last 
+# during package halt time.
+# 
+# NOTE: Same "external_script" program cannot be specified more than once in 
+# the package configuration file. Each "external_script" program must be 
+# unique.
+#    
+# NOTE: When "external_script" are configured as part of modular CFS packages
+# they should not be used to start up applications.
+# Users are strongly recommended to keep the execution time of the scripts as 
+# short as possible.
+# 
+# NOTE: All "external_script" programs will be run with the first argument "$1"
+#       set to "validate" when the package is applied to the configuration.
+# 
+# Examples:
+# 
+# external_script /etc/cmcluster/packages/pkg1a/task0
+# external_script /etc/cmcluster/packages/pkg1a/task1
+# external_script /etc/cmcluster/packages/pkg1a/task2
+# 
+# The following is the sequence of standard steps (for a package without
+# external scripts):
+# 
+#     Package starting                 |   Package halting
+#                                      |
+#     STEP            SG_SCRIPT_ACTION |   STEP             SG_SCRIPT_ACTION
+#                                      |
+#     START                            |   START
+#     VOLUME_GROUPS         start      |   DEFERRED_RESOURCES     stop
+#     FILESYSTEMS           start      |   SERVICES               stop
+#     IP_ADDRESSES          start      |   IP_ADDRESSES           stop
+#     SERVICES              start      |   FILESYSTEMS            stop
+#     DEFERRED_RESOURCES    start      |   VOLUME_GROUPS          stop
+#     END                              |   END
+# 
+# When a package includes external scripts, the steps are executed in
+# the following order (for both validation and execution):
+# 
+#     START
+#     VOLUME_GROUPS 
+#     FILESYSTEMS        
+#     IP_ADDRESSES       
+#     /etc/cmcluster/packages/pkg1a/task0 start
+#     /etc/cmcluster/packages/pkg1a/task1 start
+#     /etc/cmcluster/packages/pkg1a/task2 start
+#     SERVICES          
+#     DEFERRED_RESOURCES 
+#     END
+# 
+# When the package halts, the steps are executed in the following order:
+# 
+#     START
+#     DEFERRED_RESOURCES 
+#     SERVICES          
+#     /etc/cmcluster/packages/pkg1a/task2 stop
+#     /etc/cmcluster/packages/pkg1a/task1 stop
+#     /etc/cmcluster/packages/pkg1a/task0 stop
+#     IP_ADDRESSES       
+#     FILESYSTEMS       
+#     VOLUME_GROUPS 
+#     END
+# 
+# A script template is available at $SGCONF/examples/external_script.template
+#      
+# Legal values for external_script: /^./|^/[0-9A-Za-z][\/0-9A-Za-z_.:\-]*[0-9A-Za-z]$/, /^\$SG(CONF|LBIN|SBIN|RUN|FFLOC|LIB)/[0-9A-Za-z][\/0-9A-Za-z_.:\-]*[0-9A-Za-z]$/.
+
+#external_script                        
+
+# Access Control Policy Parameters.
+# 
+# "user_name", "user_host" and "user_role" specify who can administer 
+# this package.
+#     
+# Three entries set the access control policy for the package: the
+# first line must be "user_name", the second "user_host", and the third "user_role".
+# Enter a value after each. 
+# 
+# 1. "user_name" can either be "any_user", or a maximum of 
+#     8 login names from the /etc/passwd file on user host.
+# 2. "user_host" is where the user can issue Serviceguard commands. 
+#     Choose one of these three values: "any_serviceguard_node", 
+#     or (any) "cluster_member_node", or a specific node. For node, 
+#     use the name portion of the official hostname supplied by the 
+#     domain name server, not the IP addresses or fully qualified name.
+# 3. "user_role" must be "package_admin". This role grants permission
+#     to "monitor", plus for administrative commands for the package.
+# 
+# These policies do not affect root users. Access Policies defined in
+# this file must not conflict with policies defined in the cluster
+# configuration file.
+# 
+# Example: to configure a role for user john from node noir to
+# administer the package, enter:
+#    user_name  john
+#    user_host  noir
+#    user_role  package_admin
+#     
+# Legal values for user_name:
+#   A string of tokens each of which starts with alphanumeric character and contains 
+#   only alphanumeric and underscore(_) characters. The tokens must be separated by a space
+#   or a tab character.
+#   Maximum length of each user_name is 39 character.
+#       
+# Legal values for user_host:
+#   Any string that starts and ends with an alphanumeric character, and 
+#   contains only alphanumeric characters, dot(.), dash(-), or underscore(_) 
+#   in the middle.
+#   Maximum length is 39 character. 
+#   
+# Legal values for user_role: package_admin.
+
+#user_name                      
+#user_host                      
+#user_role                      
+
+# ************ HANFS TOOLKIT PARAMETERS ************
+# 
+#   NFS EXPORTS
+#   
+#   Specifies all exported NFS directories with share options. The directories
+#   must be defined in the mounted file system FS list specified in the control 
+#   script. These variables are used by the command "share" to share the
+#   file systems and the command "unshare" to unshare the file systems.
+#   The configuration value for XFS should be with in double quotes.
+#   Example: XFS        "-o ro /pkg1"
+#   Example: XFS        "/pkg2"
+#   
+# Legal values for nfs/hanfs_export/XFS: /^\"[^"]+[^\]\"$/.
+
+nfs/hanfs_export/XFS            "/mid"                  
+
+#    FLM
+#    
+#    The environment variable FILE_LOCK_MIGRATION specifies if this
+#    SG package requires NFS file lock migration or not.  By default
+#    this variable is set to 0.  Set this variable to 1 to enable
+#    File Lock Migration support.
+#    
+# Legal values for nfs/hanfs_export/FILE_LOCK_MIGRATION: ( (value >= 0) && (value <= 1) ).
+
+nfs/hanfs_export/FILE_LOCK_MIGRATION                    0
+
+#    NFS Cross Mount
+#    
+#    The variables need to be in pairs.  SNFS indicates the server
+#    exported filesystem, and CNFS indicates the client mount
+#    point
+#    Example:
+#       SNFS            "servername:/exported/fs"; 
+#       CNFS            "/client/mountpoint"
+#    
+# Legal values for nfs/hanfs_export/SNFS: <Any String>
+
+#nfs/hanfs_export/SNFS                  
+
+# Legal values for nfs/hanfs_export/CNFS: <Any String>
+
+#nfs/hanfs_export/CNFS                  
+
+#    Service Command (nfs_upcc.mon) Parameter
+#    
+#    The interval (in seconds) between checking if NFS daemons
+#    are up and running. The default is set to 10 seconds.
+#    
+# Legal values for nfs/hanfs_export/MONITOR_INTERVAL: <Any String>
+
+nfs/hanfs_export/MONITOR_INTERVAL                       10
+
+#    Service Command (nfs_upcc.mon) Parameter
+#    
+#    The number of times to attempt to ping 'rpc.lockd' before
+#    giving up and exiting. The default is 4.
+#    
+# Legal values for nfs/hanfs_export/MONITOR_LOCKD_RETRY: <Any String>
+
+nfs/hanfs_export/MONITOR_LOCKD_RETRY                    4
+
+#    Service Command (nfs_upcc.mon) Parameter
+#    
+#    The number of times to attempt to ping 'rpc.statd', 
+#    'rpc.mountd', 'nfsd', 'rpc.pcnfsd' and 'nfs_upcc.flm', before
+#    giving up and exiting. The default is 4.
+#    
+# Legal values for nfs/hanfs_export/MONITOR_DAEMONS_RETRY: <Any String>
+
+nfs/hanfs_export/MONITOR_DAEMONS_RETRY                  4
+
+#    Service Command (nfs_upcc.mon) Parameter
+#    
+#    The number of times to attempt to ping 'rpcbind' before
+#    giving up and exiting. The default is 4.
+#    
+# Legal values for nfs/hanfs_export/PORTMAP_RETRY: <Any String>
+
+nfs/hanfs_export/PORTMAP_RETRY                  4
+
+#    Network ID supported by the NFS service daemons
+#    
+#    The Network ID's on which the NFS service daemons listen for
+#    service requests. The service daemons are monitored only for
+#    these configured netids. This overrides the default logic of
+#    monitoring the service daemons, based on the type (IPv4/IPv6)
+#    of the IP address configured.
+#    Example: 
+#       SUPPORTED_NETIDS tcp
+#       SUPPORTED_NETIDS udp
+#    
+# Legal values for nfs/hanfs_export/SUPPORTED_NETIDS: tcp, tcp6, udp, udp6.
+
+#nfs/hanfs_export/SUPPORTED_NETIDS                      
+
+#    FLM Holding Directory
+#    
+#    The FLM_HOLDING_DIR variable defines the holding directory in a
+#    disk volume associated with the HA/NFS package.  This directory
+#    will hold copies of the files from the /var/statmon/sm directory
+#    and will migrate with the HA/NFS package during a failover.  The
+#    contents of this directory will be used to populate the
+#    /var/statmon/sm directory when recovering from a failover event.
+# 
+#    The NFSV4_FLM_HOLDING_DIR variable defines the directory to hold
+#    copies of the files from the /var/nfs4/v4_state directory
+#    when NFSv4 is enabled.
+# 
+#    Select a directory in a file system that is part of the HA/NFS package.
+# 
+#    Example: FLM_HOLDING_DIR           "/export/sm"
+#    Example: NFSV4_FLM_HOLDING_DIR     "/export/nfsv4"
+# 
+#    where "/export/sm" and "/export/nfsv4" are directories residing
+#    in a disk volume associated with this HA/NFS package.
+#    
+# Legal values for nfs/hanfs_flm/FLM_HOLDING_DIR: <Any String>
+
+nfs/hanfs_flm/FLM_HOLDING_DIR                   ""
+
+# Legal values for nfs/hanfs_flm/NFSV4_FLM_HOLDING_DIR: <Any String>
+
+nfs/hanfs_flm/NFSV4_FLM_HOLDING_DIR                     ""
+
+#    Define the interval in seconds to copy the file lock state
+#    (i.e. monitoring entries) files into the holding directory.
+#    The default is 5 seconds.
+#    
+# Legal values for nfs/hanfs_flm/PROPAGATE_INTERVAL: <Any String>
+
+nfs/hanfs_flm/PROPAGATE_INTERVAL                        5
+
+#    Define the amount of time in seconds to wait before starting the
+#    cycle that copies the file lock state (i.e. monitoring entries)
+#    files into the holding directory. This allows time for rpc.statd
+#    to complete its file lock migration process since rpc.statd is
+#    started just before this script. The default is 90 seconds.
+#    
+# Legal values for nfs/hanfs_flm/STATMON_WAITTIME: <Any String>
+
+nfs/hanfs_flm/STATMON_WAITTIME                  90
